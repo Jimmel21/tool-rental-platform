@@ -1,0 +1,203 @@
+// Tool Rental Platform - Trinidad & Tobago
+// https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ ENUMS ============
+
+enum UserRole {
+  CUSTOMER
+  ADMIN
+  PARTNER
+}
+
+enum ToolStatus {
+  AVAILABLE
+  RENTED
+  MAINTENANCE
+  RETIRED
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum DeliveryOption {
+  PICKUP
+  DELIVERY
+}
+
+enum PaymentMethod {
+  CARD
+  CASH
+  BANK_TRANSFER
+}
+
+enum PaymentStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  REFUNDED
+}
+
+// ============ MODELS ============
+
+model User {
+  id         String   @id @default(cuid())
+  email      String   @unique
+  password   String   // hashed
+  name       String
+  phone      String?
+  address    String?
+  role       UserRole @default(CUSTOMER)
+
+  // ID verification
+  idType     String?  // e.g. "National ID", "Passport"
+  idNumber   String?
+  idVerified Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  toolsOwned  Tool[]     @relation("ToolOwner")
+  bookings    Booking[]  @relation("CustomerBookings")
+  reviews     Review[]
+
+  @@index([role])
+  @@index([email])
+}
+
+model Category {
+  id          String   @id @default(cuid())
+  name        String
+  slug        String   @unique
+  description String?
+  icon        String?  // icon name or URL
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tools Tool[]
+
+  @@index([slug])
+}
+
+model Tool {
+  id           String     @id @default(cuid())
+  slug         String     @unique
+  name         String
+  description  String?
+  categoryId   String
+  category     Category   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  brand        String?
+  model        String?
+
+  // Rates in TTD
+  dailyRate    Decimal    @db.Decimal(10, 2)
+  weeklyRate   Decimal    @db.Decimal(10, 2)
+  depositAmount Decimal   @db.Decimal(10, 2)
+
+  images       String[]   // array of image URLs
+
+  status       ToolStatus @default(AVAILABLE)
+  ownerId      String
+  owner        User       @relation("ToolOwner", fields: [ownerId], references: [id], onDelete: Restrict)
+
+  conditionNotes String?
+  gpsTrackerId   String?   // optional GPS tracker ID
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  bookings Booking[]
+  reviews  Review[]
+
+  @@index([ownerId])
+  @@index([categoryId])
+  @@index([status])
+  @@index([slug])
+  @@index([ownerId, status])
+}
+
+model Booking {
+  id         String        @id @default(cuid())
+  toolId     String
+  tool       Tool          @relation(fields: [toolId], references: [id], onDelete: Restrict)
+  customerId String
+  customer   User          @relation("CustomerBookings", fields: [customerId], references: [id], onDelete: Restrict)
+
+  startDate  DateTime      @db.Date
+  endDate    DateTime      @db.Date
+  status     BookingStatus @default(PENDING)
+
+  // Amounts in TTD
+  totalAmount  Decimal     @db.Decimal(10, 2)
+  depositPaid  Decimal     @db.Decimal(10, 2) @default(0)
+  balanceDue   Decimal     @db.Decimal(10, 2) @default(0)
+
+  deliveryOption DeliveryOption @default(PICKUP)
+  deliveryAddress String?
+  deliveryFee     Decimal?   @db.Decimal(10, 2)
+
+  notes      String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  payments Payment[]
+  review   Review?
+
+  @@index([toolId])
+  @@index([customerId])
+  @@index([status])
+  @@index([startDate, endDate])
+}
+
+model Payment {
+  id            String        @id @default(cuid())
+  bookingId     String
+  booking       Booking       @relation(fields: [bookingId], references: [id], onDelete: Restrict)
+  amount        Decimal       @db.Decimal(10, 2)
+  method        PaymentMethod
+  status        PaymentStatus @default(PENDING)
+  transactionRef String?      @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bookingId])
+  @@index([transactionRef])
+  @@index([status])
+}
+
+model Review {
+  id         String   @id @default(cuid())
+  bookingId  String   @unique // one review per booking
+  booking    Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  customerId String
+  customer   User     @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  toolId     String
+  tool       Tool     @relation(fields: [toolId], references: [id], onDelete: Cascade)
+
+  rating     Int      // 1-5
+  comment    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([bookingId])
+  @@index([customerId])
+  @@index([toolId])
+}
