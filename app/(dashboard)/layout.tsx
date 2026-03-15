@@ -14,12 +14,24 @@ export default function DashboardLayout({
             <Link href="/dashboard" className="text-xl font-semibold text-gray-900">
               Tool Rental TT
             </Link>
-            <nav className="flex gap-4">
+            <nav className="flex items-center gap-6">
               <Link
                 href="/dashboard"
                 className="text-sm font-medium text-gray-600 hover:text-gray-900"
               >
                 Dashboard
+              </Link>
+              <Link
+                href="/dashboard/bookings"
+                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+              >
+                My Bookings
+              </Link>
+              <Link
+                href="/dashboard/profile"
+                className="text-sm font-medium text-gray-600 hover:text-gray-900"
+              >
+                Profile
               </Link>
               <Link
                 href="/"

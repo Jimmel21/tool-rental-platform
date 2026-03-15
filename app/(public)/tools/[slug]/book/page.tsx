@@ -1,19 +1,35 @@
-import { redirect } from "next/navigation";
+import { redirect, notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getToolBySlug } from "@/lib/data/tool-by-slug";
 import { Container } from "@/components/layout/Container";
 import { BookingForm } from "./BookingForm";
 
+export const dynamic = "force-dynamic";
+
 interface PageProps {
   params: Promise<{ slug: string }>;
-  searchParams: Promise<{ start?: string; end?: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function BookPage({ params, searchParams }: PageProps) {
+  let slug: string;
+  let resolvedSearch: { start?: string; end?: string };
+
+  try {
+    const p = await params;
+    slug = p.slug;
+    const sp = await searchParams;
+    resolvedSearch = {
+      start: typeof sp.start === "string" ? sp.start : undefined,
+      end: typeof sp.end === "string" ? sp.end : undefined,
+    };
+  } catch (e) {
+    console.error("Book page params error:", e);
+    notFound();
+  }
+
   const session = await getServerSession(authOptions);
-  const { slug } = await params;
-  const resolvedSearch = await searchParams;
 
   if (!session?.user?.id) {
     const callbackPath = `/tools/${slug}/book`;
@@ -26,7 +42,13 @@ export default async function BookPage({ params, searchParams }: PageProps) {
 
   const { start, end } = resolvedSearch;
 
-  const tool = await getToolBySlug(slug);
+  let tool: Awaited<ReturnType<typeof getToolBySlug>>;
+  try {
+    tool = await getToolBySlug(slug);
+  } catch (e) {
+    console.error("Book page getToolBySlug error:", e);
+    notFound();
+  }
   if (!tool) redirect("/tools");
 
   return (

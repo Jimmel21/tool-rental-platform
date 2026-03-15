@@ -68,6 +68,17 @@ export default async function BookingConfirmPage({ params }: PageProps) {
           </ol>
         </div>
 
+        {booking.status === "PENDING" && Number(booking.balanceDue) > 0 && (
+          <div className="mt-8">
+            <Link
+              href={`/checkout/${booking.id}`}
+              className="inline-flex items-center justify-center rounded-md bg-gray-900 px-5 py-3 text-sm font-medium text-white hover:bg-gray-800"
+            >
+              Pay now
+            </Link>
+          </div>
+        )}
+
         <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
           <a
             href={`https://wa.me/${WHATSAPP_NUMBER}`}

@@ -51,6 +51,17 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum DepositStatus {
+  HELD
+  RELEASED
+  DEDUCTED
+}
+
+enum PaymentType {
+  RENTAL
+  DEPOSIT
+}
+
 // ============ MODELS ============
 
 model User {
@@ -151,6 +162,8 @@ model Booking {
   deliveryAddress String?
   deliveryFee     Decimal?   @db.Decimal(10, 2)
 
+  depositStatus DepositStatus?
+
   notes      String?
 
   createdAt DateTime @default(now())
@@ -171,8 +184,10 @@ model Payment {
   booking       Booking       @relation(fields: [bookingId], references: [id], onDelete: Restrict)
   amount        Decimal       @db.Decimal(10, 2)
   method        PaymentMethod
+  type          PaymentType   @default(RENTAL)
   status        PaymentStatus @default(PENDING)
   transactionRef String?      @unique
+  customerDeclaredPaidAt DateTime?  // For bank transfer: when customer clicked "I've made the transfer"
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

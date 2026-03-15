@@ -79,15 +79,15 @@ export function BookingForm({ tool, defaultStart, defaultEnd }: BookingFormProps
           deliveryZone: deliveryOption === "DELIVERY" ? deliveryZone : undefined,
         }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) {
-        setError(data.error ?? "Could not create booking.");
+        setError((data.error as string) ?? "Could not create booking.");
         setLoading(false);
         return;
       }
       router.push(`/bookings/${data.id}/confirm`);
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError("Network or unexpected error. Please try again.");
     } finally {
       setLoading(false);
     }

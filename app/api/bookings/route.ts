@@ -102,9 +102,10 @@ export async function POST(request: Request) {
     });
   } catch (e) {
     console.error("Create booking error:", e);
-    return NextResponse.json(
-      { error: "Something went wrong" },
-      { status: 500 }
-    );
+    const message =
+      process.env.NODE_ENV === "development" && e instanceof Error
+        ? e.message
+        : "Something went wrong. If this continues, run: npx prisma migrate deploy";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
