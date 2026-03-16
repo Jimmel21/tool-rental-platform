@@ -22,6 +22,21 @@ async function main() {
     });
   }
 
+  const adminEmail = "admin@toolrental.tt";
+  let admin = await prisma.user.findUnique({ where: { email: adminEmail } });
+  if (!admin) {
+    admin = await prisma.user.create({
+      data: {
+        email: adminEmail,
+        password: await hash("Admin123", 12),
+        name: "Admin User",
+        phone: "+18681234567",
+        role: UserRole.ADMIN,
+      },
+    });
+    console.log("Admin user created:", adminEmail);
+  }
+
   const partnerEmail = "partner@toolrental.tt";
   let partner = await prisma.user.findUnique({ where: { email: partnerEmail } });
   if (!partner) {
@@ -50,6 +65,8 @@ async function main() {
     { name: "Generator 3kW", categorySlug: "electrical", daily: 85, weekly: 380, deposit: 200, description: "Portable 3kW petrol generator.", brand: "Honda", model: "EU30i" },
     { name: "Circular Saw", categorySlug: "power-tools", daily: 55, weekly: 260, deposit: 120, description: "Corded 7¼ inch circular saw.", brand: "DeWalt", model: "DWE575" },
     { name: "Trolley Dolly", categorySlug: "lifting-moving", daily: 35, weekly: 150, deposit: 80, description: "Heavy duty 4-wheel furniture dolly.", brand: "Generic", model: "500kg" },
+    { name: "Hedge Trimmer", categorySlug: "garden-outdoor", daily: 50, weekly: 240, deposit: 100, description: "Cordless hedge trimmer with battery and charger.", brand: "Black+Decker", model: "GTC18450" },
+    { name: "Portable Air Compressor", categorySlug: "construction", daily: 65, weekly: 300, deposit: 150, description: "6 gallon portable air compressor for nails and inflating.", brand: "Porter Cable", model: "C2002" },
   ];
 
   for (const t of tools) {
@@ -75,7 +92,9 @@ async function main() {
     });
   }
 
-  console.log("Seed complete: categories, partner user, tools.");
+  console.log("Seed complete: 6 categories, admin & partner users, 10 sample tools.");
+  console.log("Admin login: admin@toolrental.tt / Admin123");
+  console.log("Partner login: partner@toolrental.tt / Partner123");
 }
 
 main()

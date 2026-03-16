@@ -1,10 +1,10 @@
 type Status = "AVAILABLE" | "RENTED" | "MAINTENANCE" | "RETIRED";
 
 const styles: Record<Status, string> = {
-  AVAILABLE: "bg-green-100 text-green-800",
-  RENTED: "bg-amber-100 text-amber-800",
-  MAINTENANCE: "bg-blue-100 text-blue-800",
-  RETIRED: "bg-gray-100 text-gray-600",
+  AVAILABLE: "bg-success text-white",
+  RENTED: "bg-amber-100 text-amber-900",
+  MAINTENANCE: "bg-primary/15 text-primary",
+  RETIRED: "bg-gray-200 text-navy",
 };
 
 const labels: Record<Status, string> = {

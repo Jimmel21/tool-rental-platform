@@ -29,10 +29,10 @@ export default async function HomePage() {
       <section className="bg-gradient-to-b from-gray-50 to-white py-16 md:py-24">
         <Container>
           <div className="mx-auto max-w-3xl text-center">
-            <h1 className="text-4xl font-bold tracking-tight text-gray-900 sm:text-5xl md:text-6xl">
+            <h1 className="text-4xl font-bold tracking-tight text-navy sm:text-5xl md:text-6xl">
               Rent tools in Trinidad &amp; Tobago
             </h1>
-            <p className="mt-4 text-lg text-gray-600">
+            <p className="mt-4 text-lg text-muted">
               Browse equipment by the day or week. Book online, pick up or get
               delivery.
             </p>
@@ -42,13 +42,13 @@ export default async function HomePage() {
             <div className="mt-6 flex justify-center gap-4">
               <Link
                 href="/tools"
-                className="rounded-md bg-gray-900 px-5 py-2.5 text-sm font-medium text-white hover:bg-gray-800"
+                className="rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-primary/90"
               >
                 Browse all tools
               </Link>
               <Link
                 href="/register"
-                className="rounded-md border border-gray-300 bg-white px-5 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                className="rounded-md border border-primary bg-white px-5 py-2.5 text-sm font-medium text-primary hover:bg-primary/5"
               >
                 Create account
               </Link>
@@ -60,10 +60,10 @@ export default async function HomePage() {
       {/* Featured categories */}
       <section className="py-16">
         <Container>
-          <h2 className="text-2xl font-bold text-gray-900">
+          <h2 className="text-2xl font-bold text-navy">
             Browse by category
           </h2>
-          <p className="mt-1 text-gray-600">
+          <p className="mt-1 text-muted">
             Find the right equipment for your project
           </p>
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -92,15 +92,15 @@ export default async function HomePage() {
       </section>
 
       {/* Popular tools carousel */}
-      <section className="bg-gray-50 py-16">
+      <section className="bg-white py-16">
         <Container>
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-900">
+            <h2 className="text-2xl font-bold text-navy">
               Popular tools
             </h2>
             <Link
               href="/tools"
-              className="text-sm font-medium text-gray-900 hover:underline"
+              className="text-sm font-medium text-primary hover:underline"
             >
               View all →
             </Link>
@@ -112,35 +112,35 @@ export default async function HomePage() {
       {/* How it works */}
       <section className="py-16">
         <Container>
-          <h2 className="text-2xl font-bold text-gray-900">How it works</h2>
-          <p className="mt-1 text-gray-600">
+          <h2 className="text-2xl font-bold text-navy">How it works</h2>
+          <p className="mt-1 text-muted">
             Rent in three simple steps
           </p>
           <div className="mt-12 grid gap-10 md:grid-cols-3">
             <div className="text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gray-900 text-2xl font-bold text-white">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-2xl font-bold text-white">
                 1
               </div>
-              <h3 className="mt-4 font-semibold text-gray-900">Browse</h3>
-              <p className="mt-2 text-sm text-gray-600">
+              <h3 className="mt-4 font-semibold text-navy">Browse</h3>
+              <p className="mt-2 text-sm text-muted">
                 Search by category or name. Compare rates and check availability.
               </p>
             </div>
             <div className="text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gray-900 text-2xl font-bold text-white">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-2xl font-bold text-white">
                 2
               </div>
-              <h3 className="mt-4 font-semibold text-gray-900">Book</h3>
-              <p className="mt-2 text-sm text-gray-600">
+              <h3 className="mt-4 font-semibold text-navy">Book</h3>
+              <p className="mt-2 text-sm text-muted">
                 Pick your dates, pay the deposit online, and confirm your booking.
               </p>
             </div>
             <div className="text-center">
-              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-gray-900 text-2xl font-bold text-white">
+              <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-2xl font-bold text-white">
                 3
               </div>
-              <h3 className="mt-4 font-semibold text-gray-900">Rent</h3>
-              <p className="mt-2 text-sm text-gray-600">
+              <h3 className="mt-4 font-semibold text-navy">Rent</h3>
+              <p className="mt-2 text-sm text-muted">
                 Collect from the owner or get delivery. Return when done.
               </p>
             </div>
@@ -155,8 +155,8 @@ export default async function HomePage() {
             <div className="flex items-start gap-4">
               <span className="text-2xl" aria-hidden>✓</span>
               <div>
-                <h3 className="font-semibold text-gray-900">Verified tools</h3>
-                <p className="mt-1 text-sm text-gray-600">
+                <h3 className="font-semibold text-navy">Verified tools</h3>
+                <p className="mt-1 text-sm text-muted">
                   Equipment checked and listed by trusted owners
                 </p>
               </div>
@@ -164,8 +164,8 @@ export default async function HomePage() {
             <div className="flex items-start gap-4">
               <span className="text-2xl" aria-hidden>🛡️</span>
               <div>
-                <h3 className="font-semibold text-gray-900">Deposits protected</h3>
-                <p className="mt-1 text-sm text-gray-600">
+                <h3 className="font-semibold text-navy">Deposits protected</h3>
+                <p className="mt-1 text-sm text-muted">
                   Secure payments. Refund when you return on time
                 </p>
               </div>
@@ -173,8 +173,8 @@ export default async function HomePage() {
             <div className="flex items-start gap-4">
               <span className="text-2xl" aria-hidden>💬</span>
               <div>
-                <h3 className="font-semibold text-gray-900">WhatsApp support</h3>
-                <p className="mt-1 text-sm text-gray-600">
+                <h3 className="font-semibold text-navy">WhatsApp support</h3>
+                <p className="mt-1 text-sm text-muted">
                   Need help? Chat with us on WhatsApp +1 868 XXX XXXX
                 </p>
               </div>

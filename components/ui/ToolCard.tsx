@@ -35,7 +35,7 @@ export function ToolCard({
   return (
     <Link
       href={`/tools/${slug}`}
-      className="group block overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:border-gray-300 hover:shadow-md"
+      className="group block overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm transition hover:border-primary/30 hover:shadow-md"
     >
       <div className="relative aspect-[4/3] bg-gray-100">
         {isDataUrl ? (
@@ -58,22 +58,22 @@ export function ToolCard({
           <AvailabilityBadge status={status} />
         </div>
       </div>
-      <div className="p-4">
+      <div className="p-4 bg-white">
         {categoryName && (
-          <p className="text-xs font-medium uppercase tracking-wide text-gray-500">
+          <p className="text-xs font-medium uppercase tracking-wide text-muted">
             {categoryName}
           </p>
         )}
-        <h3 className="mt-1 font-semibold text-gray-900 group-hover:text-gray-700">
+        <h3 className="mt-1 font-semibold text-navy group-hover:text-primary">
           {name}
         </h3>
         {description && (
-          <p className="mt-1 line-clamp-2 text-sm text-gray-600">{description}</p>
+          <p className="mt-1 line-clamp-2 text-sm text-muted">{description}</p>
         )}
         <div className="mt-3 flex items-center justify-between">
-          <PriceDisplay amount={dailyRate} perDay className="font-semibold" />
+          <PriceDisplay amount={dailyRate} perDay className="font-semibold text-primary" />
           {averageRating != null && (
-            <span className="text-sm text-gray-600">
+            <span className="text-sm text-muted">
               ★ {averageRating} {reviewCount > 0 && `(${reviewCount})`}
             </span>
           )}

@@ -18,8 +18,8 @@ export function PriceDisplay({
   const suffix = perWeek ? " / week" : perDay ? " / day" : "";
   return (
     <span className={className}>
-      {formatTTD(amount)}
-      {suffix && <span className="text-gray-500">{suffix}</span>}
+      <span className="text-primary">{formatTTD(amount)}</span>
+      {suffix && <span className="text-muted">{suffix}</span>}
     </span>
   );
 }

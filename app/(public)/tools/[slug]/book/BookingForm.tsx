@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatTTD } from "@/lib/utils/currency";
 import { DELIVERY_ZONES } from "@/lib/delivery-zones";
+import { FormError } from "@/components/ui/FormError";
+import { ButtonSpinner } from "@/components/ui/ButtonSpinner";
 
 interface BookingFormProps {
   tool: { id: string; slug: string; name: string; dailyRate: number; depositAmount: number };
@@ -97,11 +99,7 @@ export function BookingForm({ tool, defaultStart, defaultEnd }: BookingFormProps
     <form onSubmit={handleSubmit} className="mt-8">
       <div className="grid gap-10 lg:grid-cols-3">
         <div className="lg:col-span-2 space-y-6">
-          {error && (
-            <div className="rounded-md bg-red-50 px-4 py-3 text-sm text-red-800">
-              {error}
-            </div>
-          )}
+          <FormError message={error} />
 
           <div>
             <h2 className="font-semibold text-gray-900">Dates</h2>
@@ -216,8 +214,9 @@ export function BookingForm({ tool, defaultStart, defaultEnd }: BookingFormProps
           <button
             type="submit"
             disabled={loading}
-            className="w-full rounded-md bg-gray-900 px-4 py-3 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 lg:w-auto lg:min-w-[200px]"
+            className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-3 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50 lg:w-auto lg:min-w-[200px]"
           >
+            {loading && <ButtonSpinner className="text-white" />}
             {loading ? "Creating booking…" : "Proceed to Payment"}
           </button>
         </div>

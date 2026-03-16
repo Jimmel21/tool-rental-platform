@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Container } from "@/components/layout/Container";
+import { DashboardNav } from "@/components/layout/DashboardNav";
+import { BottomTabBar } from "@/components/layout/BottomTabBar";
 
 export default function DashboardLayout({
   children,
@@ -7,45 +9,21 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b border-gray-200 bg-white">
+    <div className="min-h-screen bg-backgroundLight">
+      <header className="sticky top-0 z-30 border-b border-gray-200 bg-white">
         <Container>
-          <div className="flex h-16 items-center justify-between">
-            <Link href="/dashboard" className="text-xl font-semibold text-gray-900">
+          <div className="flex h-14 items-center justify-between sm:h-16">
+            <Link href="/dashboard" className="text-lg font-semibold text-gray-900 sm:text-xl">
               Tool Rental TT
             </Link>
-            <nav className="flex items-center gap-6">
-              <Link
-                href="/dashboard"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900"
-              >
-                Dashboard
-              </Link>
-              <Link
-                href="/dashboard/bookings"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900"
-              >
-                My Bookings
-              </Link>
-              <Link
-                href="/dashboard/profile"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900"
-              >
-                Profile
-              </Link>
-              <Link
-                href="/"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900"
-              >
-                Home
-              </Link>
-            </nav>
+            <DashboardNav />
           </div>
         </Container>
       </header>
-      <main>
-        <Container className="py-8">{children}</Container>
+      <main className="pb-20 md:pb-8">
+        <Container className="py-6 md:py-8">{children}</Container>
       </main>
+      <BottomTabBar />
     </div>
   );
 }

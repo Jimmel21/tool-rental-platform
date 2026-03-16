@@ -139,7 +139,7 @@ export function ProfileClient({ profile }: { profile: ProfileData }) {
           <button
             type="submit"
             disabled={savingProfile}
-            className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
           >
             {savingProfile ? "Saving…" : "Save changes"}
           </button>
@@ -196,7 +196,7 @@ export function ProfileClient({ profile }: { profile: ProfileData }) {
           <button
             type="submit"
             disabled={changingPassword}
-            className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+            className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
           >
             {changingPassword ? "Updating…" : "Update password"}
           </button>

@@ -48,6 +48,14 @@ export const authOptions: NextAuthOptions = {
         token.email = user.email ?? undefined;
         token.name = user.name ?? undefined;
       }
+      // Populate role for existing sessions that don't have it (e.g. logged in before role was added)
+      if (token.sub && !token.role) {
+        const u = await prisma.user.findUnique({
+          where: { id: token.sub },
+          select: { role: true },
+        });
+        if (u) token.role = u.role as UserRole;
+      }
       return token;
     },
     async session({ session, token }) {

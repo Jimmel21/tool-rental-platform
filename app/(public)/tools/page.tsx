@@ -46,8 +46,8 @@ export default async function ToolsPage({ searchParams }: PageProps) {
   return (
     <div className="py-8">
       <Container>
-        <h1 className="text-3xl font-bold text-gray-900">Browse tools</h1>
-        <p className="mt-1 text-gray-600">
+        <h1 className="text-3xl font-bold text-navy">Browse tools</h1>
+        <p className="mt-1 text-muted">
           Filter and sort to find the right equipment
         </p>
         <ToolsBrowseClient

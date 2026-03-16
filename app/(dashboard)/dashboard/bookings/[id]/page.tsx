@@ -143,7 +143,7 @@ export default async function DashboardBookingDetailPage({ params }: PageProps) 
           {booking.status === "PENDING" && Number(booking.balanceDue) > 0 && (
             <Link
               href={`/checkout/${booking.id}`}
-              className="block rounded-md bg-gray-900 px-4 py-3 text-center text-sm font-medium text-white hover:bg-gray-800"
+              className="block rounded-md bg-primary px-4 py-3 text-center text-sm font-medium text-white hover:bg-primary/90"
             >
               Pay now
             </Link>
@@ -151,6 +151,7 @@ export default async function DashboardBookingDetailPage({ params }: PageProps) 
 
           <BookingDetailClient
             bookingId={booking.id}
+            bookingReference={booking.reference}
             status={booking.status}
             hasReview={!!booking.review}
             toolSlug={booking.tool.slug}

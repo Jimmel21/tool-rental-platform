@@ -1,0 +1,18 @@
+{
+  "name": "Tool Rental TT",
+  "short_name": "Tool Rental TT",
+  "description": "Rent tools and equipment in Trinidad & Tobago",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#111827",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

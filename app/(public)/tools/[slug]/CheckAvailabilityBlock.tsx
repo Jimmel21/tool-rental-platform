@@ -18,7 +18,7 @@ export function CheckAvailabilityBlock({ toolId, toolSlug }: CheckAvailabilityBl
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="w-full rounded-md bg-gray-900 px-4 py-3 text-sm font-medium text-white hover:bg-gray-800"
+          className="w-full rounded-md bg-primary px-4 py-3 text-sm font-medium text-white hover:bg-primary/90"
         >
           Check Availability
         </button>

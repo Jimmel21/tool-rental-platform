@@ -126,8 +126,10 @@ model Tool {
   ownerId      String
   owner        User       @relation("ToolOwner", fields: [ownerId], references: [id], onDelete: Restrict)
 
-  conditionNotes String?
-  gpsTrackerId   String?   // optional GPS tracker ID
+  conditionNotes    String?
+  gpsTrackerId      String?   // optional GPS tracker ID
+  nextMaintenanceAt DateTime? // admin: next scheduled maintenance
+  maintenanceNotes  String?   // admin: maintenance log / notes
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

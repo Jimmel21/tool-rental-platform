@@ -3,16 +3,17 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-
-const WHATSAPP_NUMBER = "18681234567";
+import { getWhatsAppUrl, whatsAppMessageBookingQuestion } from "@/lib/whatsapp";
 
 export function BookingDetailClient({
   bookingId,
+  bookingReference,
   status,
   hasReview,
   toolSlug,
 }: {
   bookingId: string;
+  bookingReference: string;
   status: string;
   hasReview: boolean;
   toolSlug: string;
@@ -76,15 +77,15 @@ export function BookingDetailClient({
         <h3 className="font-semibold text-gray-900">Actions</h3>
         <div className="mt-4 flex flex-col gap-3">
           <a
-            href={`https://wa.me/${WHATSAPP_NUMBER}`}
+            href={getWhatsAppUrl(whatsAppMessageBookingQuestion(bookingReference))}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-[#25D366] px-4 py-2 text-sm font-medium text-white hover:bg-[#20BD5A]"
           >
-            Contact support
+            Question about this booking (WhatsApp)
           </a>
           <a
-            href={`https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(`Report issue for booking ${bookingId}`)}`}
+            href={getWhatsAppUrl(`Report issue for booking #${bookingReference}`)}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex justify-center rounded-md border border-amber-200 bg-amber-50 px-4 py-2 text-sm font-medium text-amber-800 hover:bg-amber-100"
@@ -104,7 +105,7 @@ export function BookingDetailClient({
           {status === "COMPLETED" && (
             <Link
               href={`/tools/${toolSlug}/book`}
-              className="inline-flex justify-center rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800"
+              className="inline-flex justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90"
             >
               Re-book this tool
             </Link>
@@ -149,7 +150,7 @@ export function BookingDetailClient({
             <button
               type="submit"
               disabled={submitting}
-              className="w-full rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+              className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
             >
               {submitting ? "Submitting…" : "Submit review"}
             </button>

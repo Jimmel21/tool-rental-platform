@@ -5,6 +5,7 @@ import Link from "next/link";
 import { formatTTD } from "@/lib/utils/currency";
 import { PriceDisplay } from "@/components/ui/PriceDisplay";
 import { BANK_TRANSFER_DETAILS } from "@/lib/payment/constants";
+import { getWhatsAppUrl, whatsAppMessageBookingQuestion } from "@/lib/whatsapp";
 
 type PaymentMethodChoice = "card" | "bank_transfer" | "pay_on_pickup" | null;
 
@@ -182,7 +183,7 @@ export function CheckoutClient({ booking }: CheckoutClientProps) {
                 type="button"
                 onClick={handleInitiateBankTransfer}
                 disabled={loading}
-                className="rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+                className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
               >
                 {loading ? "Generating…" : "Get reference & bank details"}
               </button>
@@ -203,7 +204,7 @@ export function CheckoutClient({ booking }: CheckoutClientProps) {
                     type="button"
                     onClick={handleDeclareTransfer}
                     disabled={loading}
-                    className="mt-4 rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+                    className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
                   >
                     {loading ? "Sending…" : "I have made the transfer"}
                   </button>
@@ -227,7 +228,7 @@ export function CheckoutClient({ booking }: CheckoutClientProps) {
                 type="button"
                 onClick={handlePayOnPickup}
                 disabled={loading}
-                className="mt-4 rounded-md bg-gray-900 px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+                className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
               >
                 {loading ? "Confirming…" : "Confirm pay on pickup"}
               </button>
@@ -262,6 +263,14 @@ export function CheckoutClient({ booking }: CheckoutClientProps) {
             </div>
           </dl>
           <p className="mt-4 text-xs text-gray-500">Ref: {booking.reference}</p>
+          <a
+            href={getWhatsAppUrl(whatsAppMessageBookingQuestion(booking.reference))}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-3 flex items-center justify-center gap-1.5 rounded-md bg-[#25D366] px-3 py-2 text-sm font-medium text-white hover:bg-[#20BD5A]"
+          >
+            Question? WhatsApp us
+          </a>
           <Link
             href={`/bookings/${booking.id}/confirm`}
             className="mt-4 block text-center text-sm font-medium text-gray-600 hover:text-gray-900"

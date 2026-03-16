@@ -80,13 +80,13 @@ export function ToolsBrowseClient({
     <div className="mt-8 flex flex-col gap-8 lg:flex-row">
       {/* Sidebar */}
       <aside className="w-full shrink-0 lg:w-64">
-        <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-          <h2 className="font-semibold text-gray-900">Category</h2>
+        <div className="rounded-xl border border-gray-200 bg-white p-4">
+          <h2 className="font-semibold text-navy">Category</h2>
           <ul className="mt-2 space-y-1">
             <li>
               <Link
                 href="/tools"
-                className={`block rounded px-2 py-1.5 text-sm ${!currentParams.category ? "font-medium text-gray-900 bg-white shadow-sm" : "text-gray-600 hover:text-gray-900"}`}
+                className={`block rounded px-2 py-1.5 text-sm ${!currentParams.category ? "font-medium text-navy bg-primary/10 text-primary" : "text-muted hover:text-primary"}`}
               >
                 All
               </Link>
@@ -95,18 +95,18 @@ export function ToolsBrowseClient({
               <li key={c.slug}>
                 <Link
                   href={`/tools${buildQuery({ ...currentParams, category: c.slug }, 1)}`}
-                  className={`block rounded px-2 py-1.5 text-sm ${currentParams.category === c.slug ? "font-medium text-gray-900 bg-white shadow-sm" : "text-gray-600 hover:text-gray-900"}`}
+                  className={`block rounded px-2 py-1.5 text-sm ${currentParams.category === c.slug ? "font-medium text-navy bg-primary/10 text-primary" : "text-muted hover:text-primary"}`}
                 >
                   {c.name}
                   {c.toolCount != null && (
-                    <span className="ml-1 text-gray-400">({c.toolCount})</span>
+                    <span className="ml-1 text-muted">({c.toolCount})</span>
                   )}
                 </Link>
               </li>
             ))}
           </ul>
 
-          <h2 className="mt-6 font-semibold text-gray-900">Price range (TT$/day)</h2>
+          <h2 className="mt-6 font-semibold text-navy">Price range (TT$/day)</h2>
           <form
             className="mt-2 flex gap-2"
             onSubmit={(e) => {
@@ -134,13 +134,13 @@ export function ToolsBrowseClient({
               defaultValue={currentParams.maxPrice}
               className="w-24 rounded border border-gray-300 px-2 py-1.5 text-sm"
             />
-            <button type="submit" className="rounded bg-gray-900 px-2 py-1.5 text-xs text-white hover:bg-gray-800">
+            <button type="submit" className="rounded bg-primary px-2 py-1.5 text-xs text-white hover:bg-primary/90">
               Apply
             </button>
           </form>
 
-          <h2 className="mt-6 font-semibold text-gray-900">Availability</h2>
-          <p className="mt-1 text-xs text-gray-500">Read-only for now</p>
+          <h2 className="mt-6 font-semibold text-navy">Availability</h2>
+          <p className="mt-1 text-xs text-muted">Read-only for now</p>
           <div className="mt-2 grid grid-cols-2 gap-2">
             <input
               type="date"
@@ -163,13 +163,13 @@ export function ToolsBrowseClient({
       {/* Main */}
       <div className="min-w-0 flex-1">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <p className="text-sm text-gray-600">
+          <p className="text-sm text-muted">
             {initialTotal} tool{initialTotal !== 1 ? "s" : ""} found
           </p>
           <select
             value={currentParams.sort}
             onChange={(e) => applyFilters({ sort: e.target.value })}
-            className="rounded border border-gray-300 bg-white px-3 py-2 text-sm"
+            className="rounded border border-gray-300 bg-white px-3 py-2 text-sm text-navy"
           >
             <option value="popular">Most popular</option>
             <option value="price-asc">Price: low to high</option>
@@ -178,16 +178,16 @@ export function ToolsBrowseClient({
         </div>
 
         {initialItems.length === 0 ? (
-          <div className="mt-12 rounded-xl border border-dashed border-gray-300 bg-gray-50 py-16 text-center text-gray-600">
+          <div className="mt-12 rounded-xl border border-dashed border-gray-300 bg-white py-16 text-center text-muted">
             No tools match your filters. Try adjusting or{" "}
-            <Link href="/tools" className="font-medium text-gray-900 hover:underline">
+            <Link href="/tools" className="font-medium text-primary hover:underline">
               clear filters
             </Link>
             .
           </div>
         ) : (
           <>
-            <div className="mt-6 grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
               {initialItems.map((t) => (
                 <ToolCard
                   key={t.slug}
@@ -210,18 +210,18 @@ export function ToolsBrowseClient({
                 {initialPage > 1 && (
                   <Link
                     href={`/tools${buildQuery(currentParams, initialPage - 1)}`}
-                    className="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="rounded border border-primary bg-white px-4 py-2 text-sm font-medium text-primary hover:bg-primary/5"
                   >
                     Previous
                   </Link>
                 )}
-                <span className="flex items-center px-4 py-2 text-sm text-gray-600">
+                <span className="flex items-center px-4 py-2 text-sm text-muted">
                   Page {initialPage} of {initialTotalPages}
                 </span>
                 {initialPage < initialTotalPages && (
                   <Link
                     href={`/tools${buildQuery(currentParams, initialPage + 1)}`}
-                    className="rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+                    className="rounded border border-primary bg-white px-4 py-2 text-sm font-medium text-primary hover:bg-primary/5"
                   >
                     Next
                   </Link>

@@ -4,10 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { PriceDisplay } from "@/components/ui/PriceDisplay";
+import { PullToRefresh } from "@/components/ui/PullToRefresh";
+import { getWhatsAppUrl } from "@/lib/whatsapp";
 import type { BookingCard } from "@/lib/data/dashboard";
 import type { BookingTab } from "@/lib/data/dashboard";
-
-const WHATSAPP_NUMBER = "18681234567";
 
 const TABS: { key: BookingTab; label: string }[] = [
   { key: "upcoming", label: "Upcoming" },
@@ -91,13 +91,13 @@ function BookingCardRow({
             {booking.startDate} → {booking.endDate}
           </p>
         </div>
-        <div className="text-right">
+        <div className="flex w-full items-center justify-between gap-2 sm:w-auto sm:flex-col sm:items-end">
           <PriceDisplay amount={booking.totalAmount} />
-          <StatusBadge status={booking.status} />
+          <span className="flex items-center gap-2">
+            <StatusBadge status={booking.status} />
+            <span className="text-gray-400">{expanded ? "▼" : "▶"}</span>
+          </span>
         </div>
-        <span className="text-gray-400">
-          {expanded ? "▼" : "▶"}
-        </span>
       </div>
 
       {expanded && (
@@ -130,7 +130,7 @@ function BookingCardRow({
               </button>
             )}
             <a
-              href={`https://wa.me/${WHATSAPP_NUMBER}`}
+              href={getWhatsAppUrl("Hi, I have a question about my booking.")}
               target="_blank"
               rel="noopener noreferrer"
               className="text-sm font-medium text-gray-600 hover:text-gray-900"
@@ -169,8 +169,8 @@ export function BookingsPageClient({
 
   return (
     <div className="mt-8">
-      <div className="border-b border-gray-200">
-        <nav className="-mb-px flex gap-6" aria-label="Tabs">
+      <div className="border-b border-gray-200 overflow-x-auto">
+        <nav className="-mb-px flex min-w-0 gap-4 sm:gap-6" aria-label="Tabs">
           {TABS.map(({ key, label }) => (
             <Link
               key={key}
@@ -187,19 +187,21 @@ export function BookingsPageClient({
         </nav>
       </div>
 
-      <div className="mt-6 space-y-4">
-        {bookings.length === 0 ? (
-          <p className="text-gray-500">No bookings in this category.</p>
-        ) : (
-          bookings.map((b) => (
-            <BookingCardRow
-              key={b.id}
-              booking={b}
-              onCancel={handleCancel}
-            />
-          ))
-        )}
-      </div>
+      <PullToRefresh className="mt-6">
+        <div className="space-y-4">
+          {bookings.length === 0 ? (
+            <p className="text-gray-500">No bookings in this category.</p>
+          ) : (
+            bookings.map((b) => (
+              <BookingCardRow
+                key={b.id}
+                booking={b}
+                onCancel={handleCancel}
+              />
+            ))
+          )}
+        </div>
+      </PullToRefresh>
     </div>
   );
 }

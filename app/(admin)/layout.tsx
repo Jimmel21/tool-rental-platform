@@ -1,39 +1,26 @@
-import Link from "next/link";
-import { Container } from "@/components/layout/Container";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { AdminSidebar } from "@/app/(admin)/admin/AdminSidebar";
+import { AdminHeader } from "@/app/(admin)/admin/AdminHeader";
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await getServerSession(authOptions);
+  if (!session?.user?.id || session.user.role !== "ADMIN") {
+    redirect("/login");
+  }
+
   return (
     <div className="min-h-screen bg-gray-100">
-      <header className="border-b border-gray-200 bg-white">
-        <Container>
-          <div className="flex h-16 items-center justify-between">
-            <Link href="/admin" className="text-xl font-semibold text-gray-900">
-              Admin — Tool Rental TT
-            </Link>
-            <nav className="flex gap-4">
-              <Link
-                href="/admin"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900"
-              >
-                Admin Home
-              </Link>
-              <Link
-                href="/"
-                className="text-sm font-medium text-gray-600 hover:text-gray-900"
-              >
-                Site
-              </Link>
-            </nav>
-          </div>
-        </Container>
-      </header>
-      <main>
-        <Container className="py-8">{children}</Container>
-      </main>
+      <AdminSidebar />
+      <div className="pl-64">
+        <AdminHeader user={session.user} />
+        <main className="p-6">{children}</main>
+      </div>
     </div>
   );
 }
