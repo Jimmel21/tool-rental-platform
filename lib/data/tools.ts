@@ -7,6 +7,8 @@ export async function getToolsList(options: {
   categorySlug?: string;
   minPrice?: number;
   maxPrice?: number;
+  startDate?: Date;
+  endDate?: Date;
   sort?: "popular" | "price-asc" | "price-desc";
   search?: string;
 }) {
@@ -32,6 +34,20 @@ export async function getToolsList(options: {
       { description: { contains: q, mode: "insensitive" } },
       { category: { name: { contains: q, mode: "insensitive" } } },
     ];
+  }
+
+  if (options.startDate && options.endDate) {
+    const start = new Date(options.startDate);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(options.endDate);
+    end.setHours(23, 59, 59, 999);
+
+    where.bookings = {
+      none: {
+        status: { in: ["PENDING", "CONFIRMED", "ACTIVE"] },
+        OR: [{ startDate: { lte: end }, endDate: { gte: start } }],
+      },
+    };
   }
 
   const orderBy =

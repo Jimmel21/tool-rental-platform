@@ -108,7 +108,7 @@ export function ToolsBrowseClient({
 
           <h2 className="mt-6 font-semibold text-navy">Price range (TT$/day)</h2>
           <form
-            className="mt-2 flex gap-2"
+            className="mt-2 grid grid-cols-[auto,auto,auto,1fr] items-center gap-2"
             onSubmit={(e) => {
               e.preventDefault();
               const form = e.currentTarget;
@@ -123,7 +123,7 @@ export function ToolsBrowseClient({
               min={0}
               placeholder="Min"
               defaultValue={currentParams.minPrice}
-              className="w-24 rounded border border-gray-300 px-2 py-1.5 text-sm"
+              className="w-20 rounded border border-gray-300 px-2 py-1.5 text-sm"
             />
             <span className="self-center text-gray-400">–</span>
             <input
@@ -132,31 +132,52 @@ export function ToolsBrowseClient({
               min={0}
               placeholder="Max"
               defaultValue={currentParams.maxPrice}
-              className="w-24 rounded border border-gray-300 px-2 py-1.5 text-sm"
+              className="w-20 rounded border border-gray-300 px-2 py-1.5 text-sm"
             />
-            <button type="submit" className="rounded bg-primary px-2 py-1.5 text-xs text-white hover:bg-primary/90">
+            <button
+              type="submit"
+              className="justify-self-start rounded bg-primary px-3 py-1.5 text-xs text-white hover:bg-primary/90"
+            >
               Apply
             </button>
           </form>
 
           <h2 className="mt-6 font-semibold text-navy">Availability</h2>
-          <p className="mt-1 text-xs text-muted">Read-only for now</p>
-          <div className="mt-2 grid grid-cols-2 gap-2">
+          <form
+            className="mt-2 grid grid-cols-[1fr,1fr] items-center gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              const form = e.currentTarget;
+              const start = (form.querySelector('[name="startDate"]') as HTMLInputElement)?.value;
+              const end = (form.querySelector('[name="endDate"]') as HTMLInputElement)?.value;
+              applyFilters(
+                {
+                  startDate: start || undefined,
+                  endDate: end || undefined,
+                },
+                true
+              );
+            }}
+          >
             <input
+              name="startDate"
               type="date"
               defaultValue={currentParams.startDate}
               className="rounded border border-gray-300 px-2 py-1.5 text-sm"
-              readOnly
-              aria-readonly
             />
             <input
+              name="endDate"
               type="date"
               defaultValue={currentParams.endDate}
               className="rounded border border-gray-300 px-2 py-1.5 text-sm"
-              readOnly
-              aria-readonly
             />
-          </div>
+            <button
+              type="submit"
+              className="col-span-2 mt-1 w-full rounded bg-primary px-3 py-1.5 text-xs text-white hover:bg-primary/90"
+            >
+              Apply dates
+            </button>
+          </form>
         </div>
       </aside>
 

@@ -24,6 +24,8 @@ export default async function ToolsPage({ searchParams }: PageProps) {
 
   const minPrice = params.minPrice ? parseInt(params.minPrice, 10) : undefined;
   const maxPrice = params.maxPrice ? parseInt(params.maxPrice, 10) : undefined;
+  const startDate = params.startDate ? new Date(params.startDate) : undefined;
+  const endDate = params.endDate ? new Date(params.endDate) : undefined;
 
   const [categories, data] = await Promise.all([
     getCategories(),
@@ -33,6 +35,8 @@ export default async function ToolsPage({ searchParams }: PageProps) {
       categorySlug: params.category ?? undefined,
       minPrice: Number.isFinite(minPrice) ? minPrice : undefined,
       maxPrice: Number.isFinite(maxPrice) ? maxPrice : undefined,
+        startDate: startDate && endDate ? startDate : undefined,
+        endDate: startDate && endDate ? endDate : undefined,
       sort:
         params.sort === "price-asc"
           ? "price-asc"
