@@ -14,10 +14,19 @@ export function ForgotPasswordForm() {
     setError("");
     setLoading(true);
     try {
-      // Placeholder: no reset endpoint yet; show success message for UX
-      await new Promise((r) => setTimeout(r, 600));
+      const res = await fetch("/api/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        setError(data.error ?? "Something went wrong. Please try again.");
+        return;
+      }
       setSent(true);
-    } catch {
+    } catch (err) {
+      console.error("Forgot password error:", err);
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
@@ -31,9 +40,6 @@ export function ForgotPasswordForm() {
           If an account exists for <strong>{email}</strong>, we&apos;ve sent
           instructions to reset your password. Check your inbox.
         </div>
-        <p className="text-sm text-gray-600">
-          Password reset is not yet implemented. Contact support for help.
-        </p>
         <Link
           href="/login"
           className="inline-block text-sm font-medium text-gray-900 hover:underline"
