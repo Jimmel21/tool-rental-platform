@@ -45,6 +45,9 @@ export function AdminBookingDetailClient({
   const [deductReason, setDeductReason] = useState("");
   const [deducting, setDeducting] = useState(false);
   const [releasing, setReleasing] = useState(false);
+  const [holding, setHolding] = useState(false);
+  const [condition, setCondition] = useState<"" | "Excellent" | "Good" | "Damaged" | "Missing">("");
+  const [damageNotes, setDamageNotes] = useState("");
   const [error, setError] = useState("");
   const [selectedTemplate, setSelectedTemplate] = useState<WhatsAppTemplateId>("booking_confirmation");
 
@@ -108,6 +111,25 @@ export function AdminBookingDetailClient({
     }
   };
 
+  const holdDeposit = async () => {
+    setHolding(true);
+    setError("");
+    try {
+      const res = await fetch("/api/admin/deposits/held", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingId }),
+      });
+      if (res.ok) router.refresh();
+      else {
+        const data = await res.json();
+        setError(data.error ?? "Failed");
+      }
+    } finally {
+      setHolding(false);
+    }
+  };
+
   const releaseDeposit = async () => {
     if (!confirm("Release deposit to customer?")) return;
     setReleasing(true);
@@ -135,10 +157,13 @@ export function AdminBookingDetailClient({
     setDeducting(true);
     setError("");
     try {
+      const reason =
+        deductReason.trim() ||
+        (condition ? `Condition: ${condition}${damageNotes ? ` — ${damageNotes}` : ""}` : "Damage");
       const res = await fetch("/api/admin/deposits/deduct", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ bookingId, amount: amt, reason: deductReason || "Damage" }),
+        body: JSON.stringify({ bookingId, amount: amt, reason }),
       });
       const data = await res.json();
       if (res.ok) {
@@ -286,49 +311,141 @@ export function AdminBookingDetailClient({
         </div>
       )}
 
-      {depositStatus === "HELD" && depositPaid > 0 && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-6">
-          <h3 className="font-semibold text-gray-900">Deposit management</h3>
-          <p className="mt-1 text-sm text-gray-600">Held: {depositPaid} TTD</p>
-          <div className="mt-4 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={releaseDeposit}
-              disabled={releasing}
-              className="rounded bg-green-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+      {(status === "ACTIVE" || status === "COMPLETED") && (
+        <div className="rounded-xl border border-gray-200 bg-white p-6 space-y-5">
+          <h3 className="font-semibold text-gray-900">Return condition</h3>
+
+          {/* Condition picker */}
+          <div>
+            <p className="text-sm font-medium text-gray-700 mb-2">Tool condition on return</p>
+            <div className="flex flex-wrap gap-2">
+              {(["Excellent", "Good", "Damaged", "Missing"] as const).map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  onClick={() => setCondition(condition === opt ? "" : opt)}
+                  className={`rounded-full border px-3 py-1 text-sm font-medium transition-colors ${
+                    condition === opt
+                      ? opt === "Excellent" || opt === "Good"
+                        ? "border-green-600 bg-green-600 text-white"
+                        : "border-red-600 bg-red-600 text-white"
+                      : "border-gray-300 bg-white text-gray-700 hover:border-gray-400"
+                  }`}
+                >
+                  {opt === "Excellent" && "✓ "}
+                  {opt === "Good" && "✓ "}
+                  {opt === "Damaged" && "⚠ "}
+                  {opt === "Missing" && "✕ "}
+                  {opt}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Damage notes — shown when condition warrants it */}
+          {(condition === "Damaged" || condition === "Missing") && (
+            <div>
+              <label htmlFor="damage-notes" className="block text-sm font-medium text-gray-700 mb-1">
+                Damage / missing notes
+              </label>
+              <textarea
+                id="damage-notes"
+                rows={3}
+                value={damageNotes}
+                onChange={(e) => setDamageNotes(e.target.value)}
+                placeholder="Describe the damage or missing items…"
+                className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+              />
+            </div>
+          )}
+
+          {/* Deposit status summary */}
+          <div className="flex items-center justify-between rounded-lg bg-gray-50 px-4 py-3 text-sm">
+            <span className="text-gray-600">Deposit status</span>
+            <span
+              className={`font-medium ${
+                depositStatus === "HELD"
+                  ? "text-amber-700"
+                  : depositStatus === "RELEASED"
+                    ? "text-green-700"
+                    : depositStatus === "DEDUCTED"
+                      ? "text-red-700"
+                      : "text-gray-500"
+              }`}
             >
-              {releasing ? "Releasing…" : "Release deposit"}
-            </button>
-            <form onSubmit={deductDeposit} className="flex flex-wrap items-end gap-2">
-              <div>
-                <input
-                  type="number"
-                  min="0.01"
-                  step="0.01"
-                  max={depositPaid}
-                  value={deductAmount}
-                  onChange={(e) => setDeductAmount(e.target.value)}
-                  placeholder="Amount"
-                  className="w-24 rounded border border-gray-300 px-2 py-1.5 text-sm"
-                />
-              </div>
-              <div>
-                <input
-                  type="text"
-                  value={deductReason}
-                  onChange={(e) => setDeductReason(e.target.value)}
-                  placeholder="Reason (e.g. damage)"
-                  className="w-40 rounded border border-gray-300 px-2 py-1.5 text-sm"
-                />
-              </div>
+              {depositStatus ?? "—"}
+              {depositStatus === "HELD" && depositPaid > 0 && ` · ${depositPaid} TTD`}
+            </span>
+          </div>
+
+          {/* Deposit actions */}
+          <div className="space-y-3">
+            {/* Hold — available when deposit is paid but not yet formally held */}
+            {depositPaid > 0 && !depositStatus && (
               <button
-                type="submit"
-                disabled={deducting || !deductAmount}
-                className="rounded bg-red-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                type="button"
+                onClick={holdDeposit}
+                disabled={holding}
+                className="w-full rounded bg-amber-500 px-3 py-2 text-sm font-medium text-white hover:bg-amber-600 disabled:opacity-50"
               >
-                {deducting ? "Deducting…" : "Deduct"}
+                {holding ? "Holding…" : `Hold Deposit (${depositPaid} TTD)`}
               </button>
-            </form>
+            )}
+
+            {/* Release + Deduct — available while HELD */}
+            {depositStatus === "HELD" && depositPaid > 0 && (
+              <>
+                <button
+                  type="button"
+                  onClick={releaseDeposit}
+                  disabled={releasing}
+                  className="w-full rounded bg-green-600 px-3 py-2 text-sm font-medium text-white hover:bg-green-700 disabled:opacity-50"
+                >
+                  {releasing ? "Releasing…" : `Release Deposit (${depositPaid} TTD)`}
+                </button>
+
+                <form onSubmit={deductDeposit} className="space-y-2">
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      max={depositPaid}
+                      value={deductAmount}
+                      onChange={(e) => setDeductAmount(e.target.value)}
+                      placeholder={`Amount (max ${depositPaid})`}
+                      className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
+                    />
+                    <button
+                      type="submit"
+                      disabled={deducting || !deductAmount}
+                      className="rounded bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                    >
+                      {deducting ? "Deducting…" : "Deduct from Deposit"}
+                    </button>
+                  </div>
+                  <input
+                    type="text"
+                    value={deductReason}
+                    onChange={(e) => setDeductReason(e.target.value)}
+                    placeholder={
+                      condition
+                        ? `Reason (default: ${condition}${damageNotes ? ` — ${damageNotes.slice(0, 40)}` : ""})`
+                        : "Reason for deduction"
+                    }
+                    className="w-full rounded border border-gray-300 px-3 py-2 text-sm"
+                  />
+                </form>
+              </>
+            )}
+
+            {/* Terminal states */}
+            {depositStatus === "RELEASED" && (
+              <p className="text-sm text-green-700 font-medium">Deposit has been released to the customer.</p>
+            )}
+            {depositStatus === "DEDUCTED" && (
+              <p className="text-sm text-red-700 font-medium">Deposit has been fully deducted.</p>
+            )}
           </div>
         </div>
       )}

@@ -1,21 +1,33 @@
 /**
- * Trinidad & Tobago delivery zones and fees (TTD)
+ * Trinidad & Tobago delivery zones — backed by the DeliveryZone database table.
+ * Use getDeliveryZones() / getDeliveryFeeByZone() / getDeliveryZoneName() in
+ * server contexts (API routes, Server Components).
+ * Pass the zones array as a prop to client components (e.g. BookingForm).
  */
-export const DELIVERY_ZONES = [
-  { id: "north", name: "North", fee: 75 },
-  { id: "central", name: "Central", fee: 50 },
-  { id: "south", name: "South", fee: 100 },
-  { id: "tobago", name: "Tobago", fee: 200 },
-] as const;
+import { prisma } from "@/lib/db";
 
-export type DeliveryZoneId = (typeof DELIVERY_ZONES)[number]["id"];
-
-export function getDeliveryFeeByZone(zoneId: string): number {
-  const zone = DELIVERY_ZONES.find((z) => z.id === zoneId);
-  return zone?.fee ?? 0;
+export interface DeliveryZone {
+  id: string;
+  name: string;
+  fee: number;
+  estimatedDays: number;
+  active: boolean;
 }
 
-export function getDeliveryZoneName(zoneId: string): string {
-  const zone = DELIVERY_ZONES.find((z) => z.id === zoneId);
-  return zone?.name ?? zoneId;
+export async function getDeliveryZones(): Promise<DeliveryZone[]> {
+  const rows = await prisma.deliveryZone.findMany({
+    where: { active: true },
+    orderBy: { id: "asc" },
+  });
+  return rows.map((r) => ({ ...r, fee: Number(r.fee) }));
+}
+
+export async function getDeliveryFeeByZone(zoneId: string): Promise<number> {
+  const row = await prisma.deliveryZone.findUnique({ where: { id: zoneId } });
+  return row ? Number(row.fee) : 0;
+}
+
+export async function getDeliveryZoneName(zoneId: string): Promise<string> {
+  const row = await prisma.deliveryZone.findUnique({ where: { id: zoneId } });
+  return row?.name ?? zoneId;
 }

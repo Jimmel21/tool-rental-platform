@@ -8,6 +8,7 @@ import {
   normalizePhoneTT,
 } from "@/lib/validations/auth";
 import { UserRole } from "@prisma/client";
+import { sendWelcomeEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   try {
@@ -81,7 +82,7 @@ export async function POST(request: Request) {
       ? normalizePhoneTT(phone.trim())
       : undefined;
 
-    await prisma.user.create({
+    const newUser = await prisma.user.create({
       data: {
         email: emailLower,
         password: hashedPassword,
@@ -90,6 +91,13 @@ export async function POST(request: Request) {
         role: UserRole.CUSTOMER,
       },
     });
+
+    const siteUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+    sendWelcomeEmail(newUser.email, newUser.name, {
+      name: newUser.name,
+      toolsUrl: `${siteUrl}/tools`,
+      contactUrl: `${siteUrl}/contact`,
+    }).catch((err) => console.error("[email] Failed to send welcome email:", err));
 
     return NextResponse.json(
       { message: "Account created. You can now sign in." },

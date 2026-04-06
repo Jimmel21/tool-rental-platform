@@ -109,7 +109,7 @@ export default async function DashboardBookingDetailPage({ params }: PageProps) 
                       <PriceDisplay amount={p.amount} /> — {p.method} ({p.status})
                     </span>
                     <span className="text-xs text-gray-500">
-                      {new Date(p.createdAt).toLocaleDateString()}
+                      {new Date(p.createdAt).toLocaleDateString("en-TT")}
                     </span>
                   </li>
                 ))}

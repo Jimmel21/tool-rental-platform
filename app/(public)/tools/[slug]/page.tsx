@@ -1,7 +1,10 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import { Container } from "@/components/layout/Container";
 import { getToolBySlug } from "@/lib/data/tool-by-slug";
+import { prisma } from "@/lib/db";
 import { PriceDisplay } from "@/components/ui/PriceDisplay";
 import { AvailabilityBadge } from "@/components/ui/AvailabilityBadge";
 import { ToolDetailContent } from "./ToolDetailContent";
@@ -40,8 +43,21 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function ToolDetailPage({ params }: PageProps) {
   const { slug } = await params;
-  const tool = await getToolBySlug(slug);
+  const [tool, session] = await Promise.all([getToolBySlug(slug), getServerSession(authOptions)]);
   if (!tool) notFound();
+
+  // Find a COMPLETED booking by this user for this tool that has no review yet.
+  const eligibleBooking = session?.user?.id
+    ? await prisma.booking.findFirst({
+        where: {
+          customerId: session.user.id,
+          toolId: tool.id,
+          status: "COMPLETED",
+          review: { is: null },
+        },
+        select: { id: true },
+      })
+    : null;
 
   const productJsonLd = {
     "@context": "https://schema.org",
@@ -98,6 +114,7 @@ export default async function ToolDetailPage({ params }: PageProps) {
               averageRating={tool.averageRating}
               reviewCount={tool.reviewCount}
               reviews={tool.reviews}
+              eligibleBookingId={eligibleBooking?.id ?? null}
             />
           </div>
 

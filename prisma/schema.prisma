@@ -74,9 +74,10 @@ model User {
   role       UserRole @default(CUSTOMER)
 
   // ID verification
-  idType     String?  // e.g. "National ID", "Passport"
-  idNumber   String?
-  idVerified Boolean  @default(false)
+  idType        String?  // e.g. "National ID", "Passport"
+  idNumber      String?
+  idVerified    Boolean  @default(false)
+  idDocumentPath String? // relative path under /public, e.g. /uploads/id/abc123.jpg
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -168,6 +169,9 @@ model Booking {
 
   notes      String?
 
+  returnCondition String?
+  damageNotes     String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -229,4 +233,14 @@ model PasswordResetToken {
 
   @@index([email])
   @@index([token])
+}
+
+model DeliveryZone {
+  id            String  @id  // "north", "central", "south", "tobago"
+  name          String
+  fee           Decimal @db.Decimal(10, 2)
+  estimatedDays Int
+  active        Boolean @default(true)
+
+  updatedAt DateTime @updatedAt
 }

@@ -24,6 +24,33 @@ export function BookingDetailClient({
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState("");
 
+  // Return form state
+  const [returnCondition, setReturnCondition] = useState("Excellent");
+  const [damageNotes, setDamageNotes] = useState("");
+  const [returnSubmitting, setReturnSubmitting] = useState(false);
+  const [returnError, setReturnError] = useState("");
+
+  const handleReturn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setReturnSubmitting(true);
+    setReturnError("");
+    try {
+      const res = await fetch(`/api/bookings/${bookingId}/return`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ condition: returnCondition, damageNotes: damageNotes.trim() || undefined }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok) {
+        router.refresh();
+      } else {
+        setReturnError(data.error ?? "Failed to submit return");
+      }
+    } finally {
+      setReturnSubmitting(false);
+    }
+  };
+
   const canCancel = status === "PENDING" || status === "CONFIRMED";
 
   const handleCancel = async () => {
@@ -115,6 +142,53 @@ export function BookingDetailClient({
           <p className="mt-3 text-sm text-red-600">{error}</p>
         )}
       </div>
+
+      {status === "ACTIVE" && (
+        <div className="rounded-xl border border-gray-200 bg-white p-6">
+          <h3 className="font-semibold text-gray-900">Submit return</h3>
+          <form onSubmit={handleReturn} className="mt-4 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">
+                Tool condition
+              </label>
+              <select
+                value={returnCondition}
+                onChange={(e) => setReturnCondition(e.target.value)}
+                className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
+              >
+                <option value="Excellent">Excellent — no issues</option>
+                <option value="Good">Good — minor wear</option>
+                <option value="Damaged">Damaged</option>
+                <option value="Missing">Missing parts</option>
+              </select>
+            </div>
+            {(returnCondition === "Damaged" || returnCondition === "Missing") && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Damage / missing parts notes
+                </label>
+                <textarea
+                  value={damageNotes}
+                  onChange={(e) => setDamageNotes(e.target.value)}
+                  rows={3}
+                  placeholder="Describe the damage or missing parts…"
+                  className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
+                />
+              </div>
+            )}
+            {returnError && (
+              <p className="text-sm text-red-600">{returnError}</p>
+            )}
+            <button
+              type="submit"
+              disabled={returnSubmitting}
+              className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+            >
+              {returnSubmitting ? "Submitting…" : "Confirm return"}
+            </button>
+          </form>
+        </div>
+      )}
 
       {status === "COMPLETED" && !hasReview && (
         <div className="rounded-xl border border-gray-200 bg-white p-6">

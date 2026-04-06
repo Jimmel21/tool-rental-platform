@@ -4,19 +4,20 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { formatTTD } from "@/lib/utils/currency";
-import { DELIVERY_ZONES } from "@/lib/delivery-zones";
 import { FormError } from "@/components/ui/FormError";
 import { ButtonSpinner } from "@/components/ui/ButtonSpinner";
+import type { DeliveryZone } from "@/lib/delivery-zones";
 
 interface BookingFormProps {
   tool: { id: string; slug: string; name: string; dailyRate: number; depositAmount: number };
+  zones: DeliveryZone[];
   defaultStart?: string;
   defaultEnd?: string;
 }
 
 const PICKUP_MESSAGE = "Pickup location will be shared after booking confirmation. Contact owner for details.";
 
-export function BookingForm({ tool, defaultStart, defaultEnd }: BookingFormProps) {
+export function BookingForm({ tool, zones, defaultStart, defaultEnd }: BookingFormProps) {
   const router = useRouter();
   const [startDate, setStartDate] = useState(defaultStart ?? "");
   const [endDate, setEndDate] = useState(defaultEnd ?? "");
@@ -39,7 +40,7 @@ export function BookingForm({ tool, defaultStart, defaultEnd }: BookingFormProps
   }, [defaultStart, defaultEnd]);
 
   const deliveryFee = deliveryOption === "DELIVERY" && deliveryZone
-    ? DELIVERY_ZONES.find((z) => z.id === deliveryZone)?.fee ?? 0
+    ? zones.find((z) => z.id === deliveryZone)?.fee ?? 0
     : 0;
 
   const days = (() => {
@@ -169,7 +170,7 @@ export function BookingForm({ tool, defaultStart, defaultEnd }: BookingFormProps
                           className="mt-1 w-full rounded border border-gray-300 px-3 py-2"
                         >
                           <option value="">Select zone</option>
-                          {DELIVERY_ZONES.map((z) => (
+                          {zones.map((z) => (
                             <option key={z.id} value={z.id}>
                               {z.name} — {formatTTD(z.fee)}
                             </option>

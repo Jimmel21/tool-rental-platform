@@ -25,11 +25,19 @@ export async function POST(request: Request) {
     );
   }
 
+  // Derive the app base URL from the incoming request origin so the WiPay
+  // response_url and origin fields are always correct (dev / staging / prod).
+  const appBaseUrl =
+    request.headers.get("origin") ??
+    process.env.NEXTAUTH_URL ??
+    "http://localhost:3000";
+
   const result = await paymentService.initiatePayment(
     bookingId,
     method,
     amount,
-    type ?? "RENTAL"
+    type ?? "RENTAL",
+    appBaseUrl
   );
 
   if (!result.success) {
@@ -42,5 +50,7 @@ export async function POST(request: Request) {
   return NextResponse.json({
     paymentId: result.paymentId,
     transactionRef: result.transactionRef,
+    // Defined for CARD payments — the client should redirect to this URL
+    checkoutUrl: result.checkoutUrl ?? null,
   });
 }

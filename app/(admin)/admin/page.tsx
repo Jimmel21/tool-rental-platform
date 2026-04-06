@@ -1,14 +1,16 @@
 import Link from "next/link";
-import { getAdminStats, getRecentBookings, getToolsNeedingAttention } from "@/lib/data/admin";
+import { getAdminStats, getRecentBookings, getToolsNeedingAttention, getRevenueByMonth } from "@/lib/data/admin";
 import { formatTTD } from "@/lib/utils/currency";
+import { RevenueChart } from "./RevenueChart";
 
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
-  const [stats, recentBookings, toolsAttention] = await Promise.all([
+  const [stats, recentBookings, toolsAttention, revenueByMonth] = await Promise.all([
     getAdminStats(),
     getRecentBookings(10),
     getToolsNeedingAttention(5),
+    getRevenueByMonth(),
   ]);
 
   return (
@@ -37,12 +39,13 @@ export default async function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Revenue chart placeholder */}
-      <div className="rounded-xl border border-gray-200 bg-white p-8 shadow-sm">
-        <h2 className="font-semibold text-gray-900">Revenue chart</h2>
-        <div className="mt-6 flex h-48 items-center justify-center rounded-lg bg-gray-50 text-gray-500">
-          Chart placeholder — integrate with your analytics
+      {/* Revenue chart */}
+      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="mb-4">
+          <h2 className="font-semibold text-gray-900">Revenue — last 12 months</h2>
+          <p className="mt-0.5 text-sm text-gray-500">Completed payments only (TTD)</p>
         </div>
+        <RevenueChart data={revenueByMonth} />
       </div>
 
       <div className="grid gap-8 lg:grid-cols-2">

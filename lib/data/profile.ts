@@ -11,6 +11,7 @@ export type ProfileData = {
   idType: string | null;
   idNumber: string | null;
   idVerified: boolean;
+  idDocumentPath: string | null;
 };
 
 export async function getProfile(): Promise<ProfileData | null> {
@@ -28,6 +29,7 @@ export async function getProfile(): Promise<ProfileData | null> {
       idType: true,
       idNumber: true,
       idVerified: true,
+      idDocumentPath: true,
     },
   });
 
@@ -42,5 +44,6 @@ export async function getProfile(): Promise<ProfileData | null> {
     idType: user.idType,
     idNumber: user.idNumber,
     idVerified: user.idVerified,
+    idDocumentPath: user.idDocumentPath,
   };
 }

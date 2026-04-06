@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { validateBookingDates, getRentalDays } from "@/lib/booking-validation";
 import { isToolAvailable } from "@/lib/availability";
 import { getDeliveryFeeByZone } from "@/lib/delivery-zones";
+import { sendBookingConfirmationEmail } from "@/lib/email";
 
 export async function POST(request: Request) {
   const session = await getServerSession(authOptions);
@@ -68,7 +69,7 @@ export async function POST(request: Request) {
     const rentalSubtotal = days * dailyRate;
     const deliveryFee =
       deliveryOption === "DELIVERY" && deliveryZone
-        ? getDeliveryFeeByZone(deliveryZone)
+        ? await getDeliveryFeeByZone(deliveryZone)
         : 0;
     const totalAmount = rentalSubtotal + depositAmount + deliveryFee;
 
@@ -89,8 +90,27 @@ export async function POST(request: Request) {
       },
       include: {
         tool: { select: { name: true, slug: true } },
+        customer: { select: { name: true, email: true } },
       },
     });
+
+    const siteUrl = process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+    sendBookingConfirmationEmail(booking.customer.email, booking.customer.name, {
+      customerName: booking.customer.name,
+      bookingRef: booking.id.slice(0, 8).toUpperCase(),
+      toolName: booking.tool.name,
+      toolImageUrl: tool.images[0] ?? null,
+      startDate: booking.startDate.toISOString().slice(0, 10),
+      endDate: booking.endDate.toISOString().slice(0, 10),
+      days,
+      rentalSubtotal,
+      depositAmount,
+      deliveryFee,
+      totalAmount,
+      deliveryOption,
+      paymentInstructions: "Please proceed to checkout to complete your payment and confirm your booking.",
+      manageUrl: `${siteUrl}/dashboard/bookings/${booking.id}`,
+    }).catch((err) => console.error("[email] Failed to send booking confirmation:", err));
 
     return NextResponse.json({
       id: booking.id,

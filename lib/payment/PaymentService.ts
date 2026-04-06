@@ -1,12 +1,18 @@
 import { prisma } from "@/lib/db";
 import { generateBankTransferReference } from "./reference";
-import { MOCK_GATEWAY_DELAY_MS } from "./constants";
+import {
+  buildWiPayCheckoutUrl,
+  generateWiPayReference,
+  isWiPayConfigured,
+} from "./wipay";
 import type { PaymentMethod } from "@prisma/client";
 
 export interface InitiateResult {
   success: boolean;
   paymentId?: string;
   transactionRef?: string;
+  /** Populated for CARD payments — redirect the customer to this URL */
+  checkoutUrl?: string;
   error?: string;
 }
 
@@ -20,19 +26,25 @@ export interface RefundResult {
   error?: string;
 }
 
-/**
- * Payment service - placeholder for WiPay, First Atlantic Commerce, etc.
- * Currently uses mock success after delay.
- */
 export class PaymentService {
   /**
-   * Initiate a payment (creates Payment record, returns ref for bank transfer).
+   * Initiate a payment.
+   *
+   * - CARD   → creates a PENDING Payment record and returns a WiPay hosted-
+   *            checkout URL.  The booking is confirmed automatically once WiPay
+   *            POSTs the success callback to /api/payments/webhook.
+   * - BANK_TRANSFER → returns a bank-transfer reference for manual verification.
+   * - CASH   → returns the payment ID so an admin can confirm on pickup.
+   *
+   * @param appBaseUrl  Full origin URL of the app (e.g. https://toolrental.tt).
+   *                    Required for CARD payments to build the WiPay callback URL.
    */
   async initiatePayment(
     bookingId: string,
     method: PaymentMethod,
     amount: number,
-    type: "RENTAL" | "DEPOSIT" = "RENTAL"
+    type: "RENTAL" | "DEPOSIT" = "RENTAL",
+    appBaseUrl?: string
   ): Promise<InitiateResult> {
     const booking = await prisma.booking.findUnique({
       where: { id: bookingId },
@@ -40,8 +52,13 @@ export class PaymentService {
     });
     if (!booking) return { success: false, error: "Booking not found" };
 
-    const transactionRef =
-      method === "BANK_TRANSFER" ? generateBankTransferReference() : undefined;
+    // Determine transaction reference based on method
+    let transactionRef: string | undefined;
+    if (method === "BANK_TRANSFER") {
+      transactionRef = generateBankTransferReference();
+    } else if (method === "CARD") {
+      transactionRef = generateWiPayReference();
+    }
 
     const payment = await prisma.payment.create({
       data: {
@@ -54,32 +71,64 @@ export class PaymentService {
       },
     });
 
-    // CASH (pay on pickup): use payment id as ref so admin can confirm later
-    const finalRef =
-      method === "CASH"
-        ? (await prisma.payment
-            .update({
-              where: { id: payment.id },
-              data: { transactionRef: payment.id },
-            })
-            .then((p) => p.transactionRef ?? undefined))
-        : payment.transactionRef ?? undefined;
+    // CASH: use the payment ID as the ref so admin can look it up
+    if (method === "CASH") {
+      const updated = await prisma.payment.update({
+        where: { id: payment.id },
+        data: { transactionRef: payment.id },
+      });
+      return {
+        success: true,
+        paymentId: payment.id,
+        transactionRef: updated.transactionRef ?? undefined,
+      };
+    }
 
+    // CARD: build WiPay checkout URL
+    if (method === "CARD") {
+      if (!isWiPayConfigured()) {
+        // Clean up the pending record so the customer can retry
+        await prisma.payment.delete({ where: { id: payment.id } });
+        return {
+          success: false,
+          error: "Card payments are not available right now. Please try bank transfer or cash.",
+        };
+      }
+
+      const base = appBaseUrl ?? process.env.NEXTAUTH_URL ?? "http://localhost:3000";
+      const checkoutUrl = buildWiPayCheckoutUrl({
+        orderId: transactionRef!,
+        total: amount.toFixed(2),
+        responseUrl: `${base}/api/payments/webhook`,
+        originUrl: base,
+      });
+
+      return {
+        success: true,
+        paymentId: payment.id,
+        transactionRef,
+        checkoutUrl,
+      };
+    }
+
+    // BANK_TRANSFER
     return {
       success: true,
       paymentId: payment.id,
-      transactionRef: finalRef,
+      transactionRef: payment.transactionRef ?? undefined,
     };
   }
 
   /**
-   * Confirm a payment (e.g. after gateway callback or manual bank verification).
-   * Look up by transactionRef or by paymentId (for CASH / admin).
-   * Mock: succeeds after 2s delay.
+   * Confirm a payment and update the booking status.
+   *
+   * Called by:
+   *   - The WiPay webhook handler after verifying a successful card payment.
+   *   - Admin routes when manually confirming cash or bank-transfer payments.
+   *
+   * Lookup order: transactionRef first, then payment ID (for cash/admin flows).
    */
   async confirmPayment(transactionRefOrPaymentId: string): Promise<ConfirmResult> {
-    await new Promise((r) => setTimeout(r, MOCK_GATEWAY_DELAY_MS));
-
     const payment = await prisma.payment
       .findUnique({
         where: { transactionRef: transactionRefOrPaymentId },
@@ -95,9 +144,7 @@ export class PaymentService {
       );
 
     if (!payment) return { success: false, error: "Payment not found" };
-    if (payment.status === "COMPLETED") {
-      return { success: true };
-    }
+    if (payment.status === "COMPLETED") return { success: true };
 
     await prisma.$transaction(async (tx) => {
       await tx.payment.update({
@@ -124,9 +171,7 @@ export class PaymentService {
         });
       }
 
-      const updated = await tx.booking.findUnique({
-        where: { id: booking.id },
-      });
+      const updated = await tx.booking.findUnique({ where: { id: booking.id } });
       if (updated && Number(updated.balanceDue) <= 0) {
         const toolDeposit = Number(payment.booking.tool.depositAmount);
         const currentDepositPaid = Number(updated.depositPaid);
@@ -145,11 +190,10 @@ export class PaymentService {
   }
 
   /**
-   * Refund a payment. Mock: succeeds after 2s delay.
+   * Refund a completed payment and reverse the booking balance adjustments.
+   * For card payments, initiate a refund via WiPay (stub — real API call TBD).
    */
   async refundPayment(paymentId: string): Promise<RefundResult> {
-    await new Promise((r) => setTimeout(r, MOCK_GATEWAY_DELAY_MS));
-
     const payment = await prisma.payment.findUnique({
       where: { id: paymentId },
       include: { booking: true },
@@ -157,6 +201,11 @@ export class PaymentService {
     if (!payment) return { success: false, error: "Payment not found" };
     if (payment.status !== "COMPLETED") {
       return { success: false, error: "Payment is not completed" };
+    }
+
+    // Stripe stub — real integration TBD
+    if (payment.method === "CARD" && payment.transactionRef?.startsWith("ST-")) {
+      // TODO: call Stripe refund API when Stripe is integrated
     }
 
     await prisma.$transaction(async (tx) => {

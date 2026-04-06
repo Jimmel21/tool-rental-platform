@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     const depositAmount = Number(tool.depositAmount);
     const days = getRentalDays(startDate, endDate);
     const rentalSubtotal = days * dailyRate;
-    const deliveryFee = deliveryZone ? getDeliveryFeeByZone(deliveryZone) : 0;
+    const deliveryFee = deliveryZone ? await getDeliveryFeeByZone(deliveryZone) : 0;
     const total = rentalSubtotal + depositAmount + deliveryFee;
 
     return NextResponse.json({

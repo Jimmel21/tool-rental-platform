@@ -2,6 +2,7 @@ import { redirect, notFound } from "next/navigation";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { getToolBySlug } from "@/lib/data/tool-by-slug";
+import { getDeliveryZones } from "@/lib/delivery-zones";
 import { Container } from "@/components/layout/Container";
 import { BookingForm } from "./BookingForm";
 
@@ -51,6 +52,8 @@ export default async function BookPage({ params, searchParams }: PageProps) {
   }
   if (!tool) redirect("/tools");
 
+  const zones = await getDeliveryZones();
+
   return (
     <div className="py-8">
       <Container>
@@ -64,6 +67,7 @@ export default async function BookPage({ params, searchParams }: PageProps) {
             dailyRate: tool.dailyRate,
             depositAmount: tool.depositAmount,
           }}
+          zones={zones}
           defaultStart={start ?? undefined}
           defaultEnd={end ?? undefined}
         />

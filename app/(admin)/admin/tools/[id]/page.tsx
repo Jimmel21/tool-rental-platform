@@ -51,12 +51,8 @@ export default async function AdminToolDetailPage({ params }: PageProps) {
               <div className="flex gap-2 overflow-x-auto p-4">
                 {tool.images.map((url, i) => (
                   <div key={i} className="h-48 w-56 flex-shrink-0 overflow-hidden rounded-lg bg-gray-100">
-                    {url.startsWith("http") || url.startsWith("data:") ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={url} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <span className="text-gray-400">URL</span>
-                    )}
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={url} alt="" className="h-full w-full object-cover" />
                   </div>
                 ))}
               </div>

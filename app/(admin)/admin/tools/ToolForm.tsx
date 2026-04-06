@@ -46,7 +46,8 @@ export function ToolForm({
   const [weeklyRate, setWeeklyRate] = useState(String(initial?.weeklyRate ?? ""));
   const [depositAmount, setDepositAmount] = useState(String(initial?.depositAmount ?? ""));
   const [images, setImages] = useState<string[]>(initial?.images ?? []);
-  const [imageUrl, setImageUrl] = useState("");
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const [status, setStatus] = useState(initial?.status ?? "AVAILABLE");
   const [ownerId, setOwnerId] = useState(initial?.ownerId ?? "");
   const [conditionNotes, setConditionNotes] = useState(initial?.conditionNotes ?? "");
@@ -60,11 +61,26 @@ export function ToolForm({
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
-  const addImage = () => {
-    const url = imageUrl.trim();
-    if (url && !images.includes(url)) {
-      setImages((prev) => [...prev, url]);
-      setImageUrl("");
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadError("");
+    setUploadingImage(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/upload", { method: "POST", body: fd });
+      const data = await res.json();
+      if (!res.ok) {
+        setUploadError(data.error ?? "Upload failed");
+      } else {
+        setImages((prev) => [...prev, data.url]);
+      }
+    } catch {
+      setUploadError("Upload failed");
+    } finally {
+      setUploadingImage(false);
+      e.target.value = "";
     }
   };
 
@@ -264,36 +280,27 @@ export function ToolForm({
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700">Images (URLs)</label>
-        <p className="mt-1 text-xs text-gray-500">
-          Add image URLs for now. File upload can be integrated later.
-        </p>
-        <div className="mt-2 flex gap-2">
-          <input
-            type="url"
-            value={imageUrl}
-            onChange={(e) => setImageUrl(e.target.value)}
-            placeholder="https://..."
-            className="flex-1 rounded border border-gray-300 px-3 py-2 text-sm"
-          />
-          <button
-            type="button"
-            onClick={addImage}
-            className="rounded border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
-          >
-            Add
-          </button>
+        <label className="block text-sm font-medium text-gray-700">Images</label>
+        <div className="mt-2">
+          <label className="inline-flex cursor-pointer items-center gap-2 rounded border border-gray-300 px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
+            <input
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="sr-only"
+              onChange={handleImageUpload}
+              disabled={uploadingImage}
+            />
+            {uploadingImage ? "Uploading…" : "Upload image"}
+          </label>
+          <span className="ml-2 text-xs text-gray-500">JPG, PNG, or WebP · max 5 MB</span>
         </div>
+        {uploadError && <p className="mt-1 text-xs text-red-600">{uploadError}</p>}
         <div className="mt-2 flex flex-wrap gap-2">
           {images.map((url, i) => (
             <div key={i} className="relative">
               <div className="h-16 w-20 overflow-hidden rounded border bg-gray-100">
-                {url.startsWith("data:") || url.startsWith("http") ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={url} alt="" className="h-full w-full object-cover" />
-                ) : (
-                  <span className="text-xs text-gray-400">URL</span>
-                )}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={url} alt="" className="h-full w-full object-cover" />
               </div>
               <button
                 type="button"

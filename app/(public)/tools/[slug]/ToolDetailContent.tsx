@@ -3,6 +3,121 @@
 import { useState, useRef } from "react";
 import Image from "next/image";
 
+// ---------------------------------------------------------------------------
+// Review submission form
+// ---------------------------------------------------------------------------
+
+function StarPicker({
+  value,
+  onChange,
+}: {
+  value: number;
+  onChange: (v: number) => void;
+}) {
+  const [hovered, setHovered] = useState(0);
+  return (
+    <div className="flex gap-1" role="radiogroup" aria-label="Rating">
+      {[1, 2, 3, 4, 5].map((star) => (
+        <button
+          key={star}
+          type="button"
+          role="radio"
+          aria-checked={value === star}
+          aria-label={`${star} star${star !== 1 ? "s" : ""}`}
+          className="text-2xl leading-none focus:outline-none"
+          style={{ color: star <= (hovered || value) ? "#f59e0b" : "#d1d5db" }}
+          onMouseEnter={() => setHovered(star)}
+          onMouseLeave={() => setHovered(0)}
+          onClick={() => onChange(star)}
+        >
+          ★
+        </button>
+      ))}
+    </div>
+  );
+}
+
+interface ReviewFormProps {
+  bookingId: string;
+  onSubmitted: (review: Review) => void;
+}
+
+function ReviewForm({ bookingId, onSubmitted }: ReviewFormProps) {
+  const [rating, setRating] = useState(0);
+  const [comment, setComment] = useState("");
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (rating === 0) {
+      setError("Please select a star rating.");
+      return;
+    }
+    setSubmitting(true);
+    setError(null);
+    try {
+      const res = await fetch("/api/reviews", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ bookingId, rating, comment: comment.trim() || null }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error ?? "Something went wrong. Please try again.");
+        return;
+      }
+      onSubmitted({
+        id: crypto.randomUUID(),
+        rating,
+        comment: comment.trim() || null,
+        customerName: "You",
+        createdAt: new Date().toISOString(),
+      });
+    } catch {
+      setError("Network error. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="mt-6 rounded-xl border border-gray-200 bg-white p-5 space-y-4">
+      <h3 className="font-semibold text-navy">Leave a Review</h3>
+
+      <div>
+        <label className="block text-sm text-muted mb-1">Rating</label>
+        <StarPicker value={rating} onChange={setRating} />
+      </div>
+
+      <div>
+        <label htmlFor="review-comment" className="block text-sm text-muted mb-1">
+          Comment <span className="text-xs">(optional)</span>
+        </label>
+        <textarea
+          id="review-comment"
+          rows={3}
+          maxLength={1000}
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          placeholder="How was your experience with this tool?"
+          className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm text-navy placeholder:text-gray-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary resize-none"
+        />
+      </div>
+
+      {error && <p className="text-sm text-red-600">{error}</p>}
+
+      <button
+        type="submit"
+        disabled={submitting}
+        className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 disabled:opacity-50"
+      >
+        {submitting ? "Submitting…" : "Submit Review"}
+      </button>
+    </form>
+  );
+}
+
 const placeholderImage = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='800' height='600' viewBox='0 0 800 600' fill='%23e5e7eb'%3E%3Crect width='800' height='600' fill='%23f3f4f6'/%3E%3Ctext x='50%25' y='50%25' dominant-baseline='middle' text-anchor='middle' font-family='sans-serif' font-size='24' fill='%239ca3af'%3ETool%3C/text%3E%3C/svg%3E";
 
 const SWIPE_THRESHOLD = 50;
@@ -26,6 +141,8 @@ interface ToolDetailContentProps {
   averageRating: number | null;
   reviewCount: number;
   reviews: Review[];
+  /** Booking ID eligible for review (COMPLETED, no existing review). Null if not eligible. */
+  eligibleBookingId: string | null;
 }
 
 export function ToolDetailContent({
@@ -37,10 +154,13 @@ export function ToolDetailContent({
   conditionNotes,
   averageRating,
   reviewCount,
-  reviews,
+  reviews: initialReviews,
+  eligibleBookingId,
 }: ToolDetailContentProps) {
   const [galleryIndex, setGalleryIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
+  const [reviews, setReviews] = useState<Review[]>(initialReviews);
+  const [reviewSubmitted, setReviewSubmitted] = useState(false);
   const list = images?.length ? images : [placeholderImage];
   const current = list[galleryIndex] ?? list[0];
   const isDataUrl = typeof current === "string" && current.startsWith("data:");
@@ -161,13 +281,29 @@ export function ToolDetailContent({
                   <span className="font-medium text-navy">★ {r.rating}</span>
                   <span className="text-sm text-muted">{r.customerName}</span>
                   <span className="text-xs text-muted">
-                    {new Date(r.createdAt).toLocaleDateString()}
+                    {new Date(r.createdAt).toLocaleDateString("en-TT")}
                   </span>
                 </div>
                 {r.comment && <p className="mt-1 text-sm text-navy">{r.comment}</p>}
               </li>
             ))}
           </ul>
+        )}
+
+        {eligibleBookingId && !reviewSubmitted && (
+          <ReviewForm
+            bookingId={eligibleBookingId}
+            onSubmitted={(newReview) => {
+              setReviews((prev) => [newReview, ...prev]);
+              setReviewSubmitted(true);
+            }}
+          />
+        )}
+
+        {reviewSubmitted && (
+          <p className="mt-4 text-sm text-green-700 font-medium">
+            Thanks for your review!
+          </p>
         )}
       </div>
     </>

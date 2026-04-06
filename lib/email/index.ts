@@ -20,6 +20,10 @@ import {
   renderPasswordResetEmail,
   PasswordResetEmailProps,
 } from "./templates/password-reset";
+import {
+  renderIdVerificationEmail,
+  IdVerificationEmailProps,
+} from "./templates/id-verification";
 
 const MAX_RETRIES = 3;
 
@@ -103,6 +107,15 @@ export async function sendPasswordResetEmail(
   props: PasswordResetEmailProps
 ) {
   const { subject, html, text } = renderPasswordResetEmail(props);
+  return sendWithRetry(to, toName, subject, html, text);
+}
+
+export async function sendIdVerificationEmail(
+  to: string,
+  toName: string | undefined,
+  props: IdVerificationEmailProps
+) {
+  const { subject, html, text } = renderIdVerificationEmail(props);
   return sendWithRetry(to, toName, subject, html, text);
 }
 

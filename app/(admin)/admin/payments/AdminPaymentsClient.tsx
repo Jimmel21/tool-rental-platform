@@ -118,7 +118,7 @@ export function AdminPaymentsClient() {
                 pendingTransfers.map((p) => (
                   <tr key={p.id}>
                     <td className="whitespace-nowrap px-4 py-3 text-sm text-gray-700">
-                      {new Date(p.createdAt).toLocaleDateString()}
+                      {new Date(p.createdAt).toLocaleDateString("en-TT")}
                     </td>
                     <td className="px-4 py-3 text-sm">
                       <Link href={`/admin/bookings/${p.bookingId}`} className="font-mono hover:underline">
